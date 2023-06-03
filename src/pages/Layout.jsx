@@ -1,6 +1,6 @@
 // Layout that will do the outlet
 import React, { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import backendInstance from '../axiosInstances/backendInstance';
 
 const healthCheck = async () => {
@@ -10,15 +10,21 @@ const healthCheck = async () => {
 
 const Layout = () => {
 
+  const user = JSON.parse(localStorage.getItem('user')) || {};
+
   // Mounting
   useEffect(() => {
     healthCheck();
   }, []);
 
+  if (user.accessToken === undefined) {
+    return <Navigate to="/login" replace />
+  }
+
   return (
     // Header
     <div style={{
-      border: "2px solid"
+      border: "2px solid yellow"
     }} >
       <Outlet />
     </div>
