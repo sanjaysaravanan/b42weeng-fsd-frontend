@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import backendInstance from '../axiosInstances/backendInstance';
 import { Navigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 const Login = () => {
+
+  const dispatch = useDispatch();
+
+  const { isLoggedIn } = useSelector(state => state.profileReducer);
 
   const user = JSON.parse(localStorage.getItem('user')) || {};
 
@@ -10,8 +15,6 @@ const Login = () => {
     email: '',
     password: '',
   });
-
-  const [isLoggedIn, setLoggedIn] = useState(user.accessToken !== undefined)
 
   const handleChange = (e) => {
     setData({
@@ -25,11 +28,11 @@ const Login = () => {
     const { data } = await backendInstance.post('/auth/login', formData);
     localStorage.setItem('user', JSON.stringify(data));
     e.target.reset();
-    setLoggedIn(true);
+    dispatch({ type: 'LOGIN_SUCCESSFULL', data });
   }
 
   if (isLoggedIn) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/" replace />;
   }
 
   return (

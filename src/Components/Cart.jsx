@@ -1,0 +1,87 @@
+import React, { useEffect, useState } from 'react';
+import backendInstance from '../axiosInstances/backendInstance';
+import { Link, Navigate } from 'react-router-dom';
+
+
+const Cart = () => {
+
+  const user = JSON.parse(localStorage.getItem('user')) || {};
+
+  const [products, setProducts] = useState([]);
+
+  const [cartId, setCartId] = useState(null);
+
+  const getProducts = async () => {
+    const response = await backendInstance.get(`/cart`);
+    setCartId(response.data.id);
+    setProducts(response.data.items);
+  }
+
+  const removeFromCart = async (productId) => {
+    await backendInstance.delete(`/cart/remove?productId=${productId}`);
+    setProducts(products.filter(({ id }) => id !== productId));
+  }
+
+  const placeOrder = async () => {
+    await backendInstance.post('/order/add', { cartId });
+    setProducts([]);
+  }
+
+  useEffect(() => {
+    getProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (user.isSeller) {
+    return <Navigate to="/" replace />
+  }
+
+  return (
+    <div
+      style={{
+        padding: 16,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          flexWrap: 'wrap'
+        }}
+      >
+        {products.map(({ id, seller, name, qty, price, imageUrl }) => (
+          <div
+            style={{
+              border: '1px solid',
+              margin: '16px',
+              textAlign: 'center'
+            }}
+          >
+            <img src={imageUrl} alt={name} style={{ height: 100, width: 120 }} />
+            <div
+              style={{
+                padding: '16px'
+              }}
+            >
+              <h4>{name}</h4>
+              Price:  ${price}
+              <br />
+              <button>Remove From Cart</button>
+            </div>
+          </div>
+        ))}
+
+      </div>
+
+      {products.length === 0 && (
+        <h3>
+          No Products found,
+          Click <Link to="/" >Here</Link> to Add
+        </h3>
+      )}
+      {products.length > 0 && <button onClick={() => placeOrder()} >Place Order</button>}
+    </div>
+  )
+};
+
+export default Cart;
